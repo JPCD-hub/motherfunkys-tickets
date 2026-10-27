@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Panel de boletas QR y control de ingreso por WhatsApp para Motherfunky's."
+    />
+    <meta name="theme-color" content="#0e0714" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MF Tickets" />
+    <title>Los Motherfunkys | Boletas QR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/mf-icon.svg" />
+    <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="ticket-store.js"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Los Motherfunkys, inicio">
+        <img class="brand-logo" src="https://jpcd-hub.github.io/Motherfunkys/LOGO.jpeg" alt="Los Motherfunkys" />
+        <small>QR TICKETS / CONTROL DE ACCESO</small>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegacion principal">
+        <a class="is-active" href="#inicio">Panel</a>
+        <a href="#boletas">Boletas</a>
+        <a href="#ingresos">Ingresos</a>
+      </nav>
+
+      <div class="operator">
+        <span class="operator-avatar" aria-hidden="true">ML</span>
+        <span class="operator-copy"><b>Maria L.</b><small>Puerta principal</small></span>
+        <span class="local-badge" id="connection-badge">Modo local</span>
+        <button class="operator-auth" id="admin-login" type="button" hidden>Entrar</button>
+        <button class="operator-auth operator-auth--signout" id="admin-logout" type="button" hidden>Salir</button>
+      </div>
+    </header>
+
+    <main id="contenido" tabindex="-1">
+      <section class="hero" id="inicio" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">CONTROL DE ACCESO / FUNK EN VIVO</p>
+          <h1 id="page-title">Preventa y puerta, <em>un mismo groove.</em></h1>
+          <p class="hero-lead">
+            Envía preventas por WhatsApp y emite boletas en puerta con un QR único para cada persona.
+          </p>
+          <div class="hero-actions">
+            <button class="button button-primary" type="button" data-open-ticket-form>Nueva boleta</button>
+            <a class="button button-outline" href="#ingresos">Abrir control de puerta</a>
+          </div>
+          <p class="hero-note"><span class="live-dot" aria-hidden="true"></span> Operación activa para Funk en la terraza</p>
+        </div>
+
+        <article class="hero-ticket" aria-label="Vista previa de una boleta QR">
+          <div class="ticket-topline"><span>PREVENTA / WHATSAPP</span><span>01 / 01</span></div>
+          <div class="ticket-brand">MOTHER<br /><i>FUNKY'S</i></div>
+          <div class="ticket-rhythm" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="ticket-bottom">
+            <div><b>FUNK EN LA<br />TERRAZA</b><small>SAB 18 OCT / 20:00</small></div>
+            <div class="hero-qr qr-host" data-qr-code="MFK-D3M0-7QRA" aria-label="Codigo QR de muestra"></div>
+          </div>
+          <span class="ticket-sticker">PREVENTA ACTIVA</span>
+        </article>
+      </section>
+
+      <section class="stats" aria-label="Resumen del evento">
+        <article><span>PREVENTAS</span><strong id="stat-presale">0</strong><small id="stat-presale-note">listas para compartir</small></article>
+        <article><span>EN PUERTA</span><strong id="stat-door">0</strong><small id="stat-door-note">emitidas en acceso</small></article>
+        <article><span>INGRESOS HOY</span><strong id="stat-checkins">0</strong><small id="stat-checkins-note">validados por QR</small></article>
+        <article><span>PENDIENTES</span><strong id="stat-ready">0</strong><small>por enviar o validar</small></article>
+      </section>
+
+      <section class="event-strip" aria-label="Evento activo">
+        <div class="event-strip-title"><span class="event-pulse" aria-hidden="true"></span><div><p>EVENTO ACTIVO</p><strong>Funk en la terraza</strong></div></div>
+        <dl class="event-meta"><div><dt>FECHA</dt><dd>Sabado, 18 Oct</dd></div><div><dt>PUERTA</dt><dd>19:30 - 23:30</dd></div><div><dt>LUGAR</dt><dd>Terraza 02</dd></div></dl>
+        <button class="text-button" type="button" id="change-event">Cambiar evento <span aria-hidden="true">-&gt;</span></button>
+      </section>
+
+      <section class="ticket-types" aria-labelledby="ticket-types-title">
+        <div class="ticket-types-intro">
+          <p class="eyebrow">TIPOS DE BOLETA</p>
+          <h2 id="ticket-types-title">Dos maneras de entrar al show.</h2>
+          <p>Cada boleta conserva un QR individual y solo puede registrar un ingreso.</p>
+        </div>
+        <article class="ticket-kind-card ticket-kind-card--presale">
+          <span class="type-number">01</span>
+          <p class="type-kicker">WHATSAPP / ANTES DEL SHOW</p>
+          <h3>Preventa</h3>
+          <p>Se crea para una persona y se comparte con su QR por WhatsApp antes de llegar.</p>
+          <button class="button button-primary" type="button" data-open-ticket-form data-ticket-type="Preventa">Crear preventa</button>
+        </article>
+        <article class="ticket-kind-card ticket-kind-card--door">
+          <span class="type-number">02</span>
+          <p class="type-kicker">ACCESO / EN EL MOMENTO</p>
+          <h3>En puerta</h3>
+          <p>Se emite directamente en el acceso. El WhatsApp es opcional para este tipo.</p>
+          <button class="button button-outline" type="button" data-open-ticket-form data-ticket-type="En puerta">Crear en puerta</button>
+        </article>
+      </section>
+
+      <section class="gate-section" id="ingresos" aria-labelledby="gate-title">
+        <header class="section-heading section-heading-light">
+          <div><p class="eyebrow">PUERTA DE ENTRADA</p><h2 id="gate-title">Escanea. Confirma. <i>Que entre la música.</i></h2></div>
+          <p>Valida preventas recibidas por WhatsApp y boletas creadas directamente en puerta con el mismo lector.</p>
+        </header>
+
+        <div class="gate-grid">
+          <article class="scanner-card">
+            <div class="scanner-card-head"><div><span class="card-kicker">LECTOR QR</span><b>Camara de acceso</b></div><span id="camera-status" class="camera-status">En espera</span></div>
+            <div class="scan-frame" id="scan-frame">
+              <div class="scan-idle" id="scan-idle"><span class="scan-symbol" aria-hidden="true">+</span><strong>Apunta al QR de la boleta</strong><small>El lector solo se activa cuando lo solicitas.</small></div>
+              <video id="camera-video" autoplay muted playsinline hidden></video>
+              <div class="scan-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              <div class="scan-line" aria-hidden="true"></div>
+            </div>
+            <div class="scanner-actions">
+              <button class="button button-cream" id="start-camera" type="button">Activar camara</button>
+              <button class="button button-ghost" id="stop-camera" type="button" hidden>Detener</button>
+              <label class="upload-link" for="qr-upload">Leer captura</label>
+              <input id="qr-upload" type="file" accept="image/*" hidden />
+            </div>
+            <p class="scanner-help" id="scanner-help">Compatible con camaras modernas. Tambien puedes leer una captura recibida por WhatsApp.</p>
+          </article>
+
+          <article class="manual-card">
+            <span class="card-kicker">ALTERNATIVA RAPIDA</span>
+            <h3>Validar por codigo</h3>
+            <p>Pega el código de una preventa o una boleta en puerta.</p>
+            <label class="field-label" for="manual-code">CODIGO DE BOLETA</label>
+            <div class="manual-input-row"><input id="manual-code" autocomplete="off" placeholder="MFK-XXXX-XXXX" /><button class="button button-red" id="validate-code" type="button">Validar</button></div>
+            <button class="sample-link" id="fill-sample-code" type="button">Probar con una boleta de muestra</button>
+            <div class="validation-result" id="validation-result" aria-live="polite"><span class="result-icon" aria-hidden="true">?</span><p>La validacion aparecera aqui.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="ticket-workspace" id="boletas" aria-labelledby="tickets-title">
+        <div class="workspace-main">
+          <header class="section-heading">
+            <div><p class="eyebrow">LISTA DE ACCESO</p><h2 id="tickets-title">Boletas del evento</h2></div>
+            <button class="button button-primary" type="button" data-open-ticket-form>+ Nueva boleta</button>
+          </header>
+
+          <div class="ticket-toolbar">
+            <label class="search-field"><span>BUSCAR</span><input id="ticket-search" type="search" placeholder="Nombre, telefono o codigo" /></label>
+            <div class="filter-set" role="group" aria-label="Filtrar boletas">
+              <button class="filter-button is-selected" data-filter="all" type="button">Todas <span id="filter-all-count">0</span></button>
+              <button class="filter-button" data-filter="type:Preventa" type="button">Preventa <span id="filter-presale-count">0</span></button>
+              <button class="filter-button" data-filter="type:En puerta" type="button">En puerta <span id="filter-door-count">0</span></button>
+              <button class="filter-button" data-filter="ready" type="button">Pendientes <span id="filter-ready-count">0</span></button>
+              <button class="filter-button" data-filter="checked-in" type="button">Ingresaron <span id="filter-checkin-count">0</span></button>
+            </div>
+          </div>
+
+          <p class="results-line" id="results-line" aria-live="polite"></p>
+          <div class="tickets-list" id="tickets-list"></div>
+          <div class="empty-state" id="empty-state" hidden><b>No hay boletas que coincidan.</b><span>Ajusta la busqueda o crea una nueva boleta.</span></div>
+        </div>
+
+        <aside class="delivery-card" aria-labelledby="delivery-title">
+          <div class="delivery-header"><span class="stamp">QR</span><p class="eyebrow">FLUJO DE ENTREGA</p></div>
+          <h3 id="delivery-title">Dos tipos de boleta. Un QR por persona.</h3>
+          <ol>
+            <li><span>01</span><p><b>Elige el tipo</b>Preventa para WhatsApp o En puerta para emitir al llegar.</p></li>
+            <li><span>02</span><p><b>Entrega el QR</b>Compártelo por WhatsApp o muéstralo desde el control de acceso.</p></li>
+            <li><span>03</span><p><b>Escanéalo en puerta</b>El ingreso queda registrado de inmediato.</p></li>
+          </ol>
+          <div class="delivery-foot"><span class="lock-mark" aria-hidden="true">*</span><p>Con Supabase, cada ingreso se sincroniza entre los dispositivos del equipo.</p></div>
+        </aside>
+      </section>
+
+      <section class="bottom-banner">
+        <div><p class="eyebrow">NOCHE EN CONTROL</p><h2>Menos listas. Mas <i>baile.</i></h2></div>
+        <p>Centraliza preventas por WhatsApp y ventas en puerta para mantener el acceso ágil incluso cuando la fila se pone buena.</p>
+        <a class="button button-outline-dark" href="#inicio">Volver al panel</a>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div><strong>MOTHERFUNKY'S</strong><span>Event access system</span></div>
+      <p>Panel operativo para control de boletas QR.</p>
+      <a href="#inicio">Subir <span aria-hidden="true">^</span></a>
+    </footer>
+
+    <button class="install-button" id="install-app" type="button" hidden>Instalar app</button>
+
+    <dialog class="modal ticket-form-modal" id="ticket-form-dialog" aria-labelledby="ticket-form-title">
+      <form id="ticket-form" method="dialog">
+        <div class="modal-heading"><div><p class="eyebrow">NUEVA BOLETA</p><h2 id="ticket-form-title">Lista para la pista.</h2></div><button class="close-button" type="button" data-close-dialog="ticket-form-dialog" aria-label="Cerrar formulario">&times;</button></div>
+        <p class="modal-intro">La boleta se crea para <b>Funk en la terraza</b>. Elige Preventa para compartir por WhatsApp o En puerta para emitirla al llegar.</p>
+        <div class="form-grid">
+          <label class="form-field form-field-full">Nombre completo<input id="ticket-name" name="name" required maxlength="80" autocomplete="name" placeholder="Ej. Laura Acevedo" /></label>
+          <label class="form-field" id="phone-field"><span id="phone-field-label">WhatsApp de preventa</span><input id="ticket-phone" name="phone" required inputmode="tel" maxlength="30" autocomplete="tel" placeholder="300 000 0000" /></label>
+          <label class="form-field">Tipo de boleta<select id="ticket-type" name="type"><option value="Preventa">Preventa · compartir por WhatsApp</option><option value="En puerta">En puerta · emitir al llegar</option></select></label>
+          <p class="type-form-note form-field-full" id="ticket-type-help">La preventa necesita un WhatsApp para compartir su QR.</p>
+          <label class="form-field form-field-full">Nota interna <span>(opcional)</span><textarea id="ticket-note" name="note" maxlength="160" placeholder="Ej. Invitada de produccion"></textarea></label>
+        </div>
+        <div class="modal-footer"><p id="ticket-form-feedback" class="form-feedback" aria-live="polite"></p><div><button class="button button-outline" type="button" data-close-dialog="ticket-form-dialog">Cancelar</button><button class="button button-primary" type="submit">Crear boleta</button></div></div>
+      </form>
+    </dialog>
+
+    <dialog class="modal ticket-view-modal" id="ticket-view-dialog" aria-labelledby="ticket-view-title">
+      <button class="close-button view-close" type="button" data-close-dialog="ticket-view-dialog" aria-label="Cerrar vista de boleta">&times;</button>
+      <div id="ticket-view-content"></div>
+    </dialog>
+
+    <dialog class="modal auth-modal" id="auth-dialog" aria-labelledby="auth-title">
+      <form id="auth-form" method="dialog">
+        <div class="modal-heading"><div><p class="eyebrow">ACCESO DEL EQUIPO</p><h2 id="auth-title">Control de puerta.</h2></div><button class="close-button" type="button" data-close-dialog="auth-dialog" aria-label="Cerrar acceso">&times;</button></div>
+        <p class="modal-intro">Inicia sesión con la cuenta autorizada para crear y validar boletas en Supabase.</p>
+        <label class="form-field">Correo electrónico<input id="auth-email" name="email" type="email" required autocomplete="email" /></label>
+        <label class="form-field">Contraseña<input id="auth-password" name="password" type="password" required autocomplete="current-password" /></label>
+        <div class="modal-footer"><p id="auth-feedback" class="form-feedback" aria-live="polite"></p><div><button class="button button-primary" type="submit">Entrar al panel</button></div></div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  </body>
+</html>

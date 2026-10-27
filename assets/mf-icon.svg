@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#0e0714"/>
+  <circle cx="256" cy="256" r="191" fill="#5018a8" stroke="#fff2c2" stroke-width="15"/>
+  <circle cx="256" cy="256" r="109" fill="#0e0714" stroke="#ff7a1a" stroke-width="22"/>
+  <circle cx="256" cy="256" r="30" fill="#c9ff2e"/>
+  <path d="M115 174c38-62 104-95 178-95M397 338c-38 62-104 95-178 95" fill="none" stroke="#ff3f81" stroke-linecap="round" stroke-width="24"/>
+  <text x="256" y="282" fill="#fff2c2" font-family="Arial Black, Arial, sans-serif" font-size="92" font-weight="900" text-anchor="middle">MF</text>
+</svg>

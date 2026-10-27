@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e0714" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MF Ticket" />
+    <meta name="description" content="Boleta digital de Los Motherfunkys." />
+    <title>Tu boleta | Los Motherfunkys</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Shrikhand&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/mf-icon.svg" />
+    <link rel="stylesheet" href="boleta.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="boleta.js"></script>
+  </head>
+  <body>
+    <main class="ticket-app" id="ticket-app">
+      <header class="ticket-header">
+        <a href="./" class="ticket-brand" aria-label="Los Motherfunkys">
+          <img src="https://jpcd-hub.github.io/Motherfunkys/LOGO.jpeg" alt="Los Motherfunkys" />
+          <span>BOLETA DIGITAL</span>
+        </a>
+        <span class="ticket-live"><i aria-hidden="true"></i> ACCESO QR</span>
+      </header>
+
+      <section class="ticket-loading" id="ticket-loading" aria-live="polite">
+        <span class="loader-mark" aria-hidden="true">MF</span>
+        <h1>Cargando tu <em>boleta.</em></h1>
+        <p>Estamos preparando tu QR de acceso.</p>
+      </section>
+
+      <section class="ticket-error" id="ticket-error" hidden aria-live="polite">
+        <span class="error-code">404</span>
+        <h1>Esta boleta no está <em>disponible.</em></h1>
+        <p id="ticket-error-copy">Revisa el enlace recibido por WhatsApp o solicita una nueva boleta al equipo del evento.</p>
+        <a href="./" class="back-link">Volver al inicio</a>
+      </section>
+
+      <section class="public-ticket" id="public-ticket" hidden aria-labelledby="public-ticket-title">
+        <div class="ticket-card-head">
+          <span id="ticket-type" class="type-chip">PREVENTA</span>
+          <span class="serial">ADMISION / 01</span>
+        </div>
+        <div class="ticket-copy">
+          <p class="ticket-eyebrow">LOS MOTHERFUNKYS PRESENTAN</p>
+          <h1 id="public-ticket-title">Tu boleta <em>está lista.</em></h1>
+          <p class="holder-label">TITULAR</p>
+          <p class="holder-name" id="ticket-holder"></p>
+          <p class="ticket-event" id="ticket-event"></p>
+        </div>
+        <div class="qr-stage">
+          <div class="qr-frame" id="ticket-qr" aria-label="Código QR de acceso"></div>
+          <p class="ticket-code" id="ticket-code"></p>
+        </div>
+        <div class="ticket-status" id="ticket-status"><span aria-hidden="true">OK</span><div><b>Boleta válida</b><small>Muéstrala en puerta para escanearla.</small></div></div>
+        <p class="ticket-safety">Este QR es personal y se valida una sola vez. Evita reenviar el enlace.</p>
+      </section>
+
+      <section class="ticket-help" id="ticket-help" hidden>
+        <h2>Antes de llegar</h2>
+        <p>Sube el brillo de tu pantalla y presenta este QR directamente al equipo de acceso.</p>
+      </section>
+    </main>
+    <button class="install-ticket-app" id="install-ticket-app" type="button" hidden>Instalar boleta</button>
+  </body>
+</html>

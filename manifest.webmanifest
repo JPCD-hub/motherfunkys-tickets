@@ -1,0 +1,19 @@
+{
+  "name": "Los Motherfunkys Tickets",
+  "short_name": "MF Tickets",
+  "description": "Boletas QR y control de acceso para Los Motherfunkys.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e0714",
+  "theme_color": "#0e0714",
+  "icons": [
+    {
+      "src": "assets/mf-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
