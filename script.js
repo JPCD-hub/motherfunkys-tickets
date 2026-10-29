@@ -3,6 +3,7 @@
 const STORAGE_KEY = "motherfunkys-ticket-manager-v1";
 const ACTIVE_EVENT = "Funk en la terraza";
 const TICKET_TYPES = { PRESALE: "Preventa", DOOR: "En puerta" };
+const CAMERA_START_TIMEOUT_MS = 15000;
 
 const seedTickets = [
   { id: "seed-1", code: "MFK-D3M0-7QRA", name: "Juliana Restrepo", phone: "300 419 2087", type: "Preventa", note: "", status: "checked-in", createdAt: "Hoy, 16:42", sentAt: "Hoy, 16:44", checkedInAt: "19:47" },
@@ -748,20 +749,50 @@ async function startCamera() {
     elements.stopCamera.hidden = false;
     setCameraState("Activando", "running");
     elements.scannerHelp.textContent = "Permite el acceso a la camara y apunta al QR dentro del marco.";
-    if (typeof window.Html5Qrcode === "function") await startCrossBrowserCamera();
-    else if ("BarcodeDetector" in window) await startNativeCamera();
-    else throw new Error("QR camera scanning is not supported.");
+    if ("BarcodeDetector" in window) {
+      try {
+        await startNativeCamera();
+      } catch (error) {
+        if (isCameraPermissionError(error) || error?.name === "TimeoutError" || typeof window.Html5Qrcode !== "function") throw error;
+        clearNativeCamera();
+        await startCrossBrowserCamera();
+      }
+    } else if (typeof window.Html5Qrcode === "function") {
+      await startCrossBrowserCamera();
+    } else {
+      throw new Error("QR camera scanning is not supported.");
+    }
+    if (!scannerState.libraryScanner && !scannerState.stream) return;
 
     setCameraState("Escaneando", "running");
     elements.scannerHelp.textContent = "Acerca el QR hasta que quede dentro del marco. La camara se detendra despues de una lectura valida.";
   } catch (error) {
     stopCamera();
-    const permissionDenied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
-    setCameraState(permissionDenied ? "Permiso requerido" : "Camara no disponible", "error");
+    const permissionDenied = isCameraPermissionError(error);
+    const timedOut = error?.name === "TimeoutError";
+    setCameraState(permissionDenied ? "Permiso requerido" : timedOut ? "Sin respuesta" : "Camara no disponible", "error");
     elements.scannerHelp.textContent = permissionDenied
       ? "Permite el acceso a la camara en los ajustes del navegador e intentalo de nuevo."
-      : "No pudimos activar la camara. Revisa que uses HTTPS, cierres otras apps que la usen e intentalo de nuevo.";
+      : timedOut
+        ? "La camara no respondio. Cierra otras apps que la usen, revisa el permiso o usa Leer captura."
+        : "No pudimos activar la camara. Revisa que uses HTTPS, cierres otras apps que la usen e intentalo de nuevo.";
   }
+}
+
+function isCameraPermissionError(error) {
+  return error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError" || error?.name === "SecurityError";
+}
+
+function withCameraStartTimeout(promise) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      const error = new Error("Camera activation timed out.");
+      error.name = "TimeoutError";
+      reject(error);
+    }, CAMERA_START_TIMEOUT_MS);
+  });
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
 }
 
 function qrFormats() {
@@ -774,7 +805,7 @@ async function startCrossBrowserCamera() {
   const scanner = new window.Html5Qrcode("camera-reader", formatsToSupport ? { formatsToSupport } : undefined);
   scannerState.libraryScanner = scanner;
   elements.cameraReader.hidden = false;
-  await scanner.start(
+  const startPromise = scanner.start(
     { facingMode: { ideal: "environment" } },
     {
       fps: 10,
@@ -788,6 +819,13 @@ async function startCrossBrowserCamera() {
     (decodedText) => { void handleScannedValue(decodedText); },
     () => {}
   );
+  try {
+    await withCameraStartTimeout(startPromise);
+  } catch (error) {
+    if (scannerState.libraryScanner === scanner) scannerState.libraryScanner = null;
+    void startPromise.then(() => scanner.stop().catch(() => {}).then(() => { try { scanner.clear(); } catch {} })).catch(() => {});
+    throw error;
+  }
   if (scannerState.libraryScanner !== scanner) {
     await scanner.stop().catch(() => {});
     try { scanner.clear(); } catch {}
@@ -796,10 +834,16 @@ async function startCrossBrowserCamera() {
 
 async function startNativeCamera() {
   scannerState.detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-  scannerState.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+  const streamPromise = navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+  try {
+    scannerState.stream = await withCameraStartTimeout(streamPromise);
+  } catch (error) {
+    void streamPromise.then((stream) => stream.getTracks().forEach((track) => track.stop())).catch(() => {});
+    throw error;
+  }
   elements.cameraVideo.srcObject = scannerState.stream;
   elements.cameraVideo.hidden = false;
-  await elements.cameraVideo.play();
+  await withCameraStartTimeout(elements.cameraVideo.play());
   scanCameraFrame();
 }
 
@@ -829,6 +873,15 @@ async function scanCameraFrame() {
   scannerState.animationFrame = window.requestAnimationFrame(scanCameraFrame);
 }
 
+function clearNativeCamera() {
+  if (scannerState.stream) scannerState.stream.getTracks().forEach((track) => track.stop());
+  scannerState.stream = null;
+  scannerState.detector = null;
+  elements.cameraVideo.pause();
+  elements.cameraVideo.srcObject = null;
+  elements.cameraVideo.hidden = true;
+}
+
 function stopCamera() {
   if (scannerState.animationFrame) window.cancelAnimationFrame(scannerState.animationFrame);
   scannerState.animationFrame = null;
@@ -844,14 +897,9 @@ function stopCamera() {
   } else {
     elements.cameraReader.replaceChildren();
   }
-  if (scannerState.stream) scannerState.stream.getTracks().forEach((track) => track.stop());
-  scannerState.stream = null;
-  scannerState.detector = null;
+  clearNativeCamera();
   scannerState.lastValue = "";
   scannerState.isValidating = false;
-  elements.cameraVideo.pause();
-  elements.cameraVideo.srcObject = null;
-  elements.cameraVideo.hidden = true;
   elements.cameraReader.hidden = true;
   elements.scanIdle.hidden = false;
   elements.scanFrame.classList.remove("is-scanning");
