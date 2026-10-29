@@ -23,6 +23,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/mf-icon.svg" />
     <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script defer src="supabase-config.js"></script>
     <script defer src="ticket-store.js"></script>
@@ -127,6 +128,7 @@
             <div class="scan-frame" id="scan-frame">
               <div class="scan-idle" id="scan-idle"><span class="scan-symbol" aria-hidden="true">+</span><strong>Apunta al QR de la boleta</strong><small>El lector solo se activa cuando lo solicitas.</small></div>
               <video id="camera-video" autoplay muted playsinline hidden></video>
+              <div class="camera-reader" id="camera-reader" hidden aria-label="Vista de la camara para leer el codigo QR"></div>
               <div class="scan-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
               <div class="scan-line" aria-hidden="true"></div>
             </div>
@@ -134,9 +136,9 @@
               <button class="button button-cream" id="start-camera" type="button">Activar camara</button>
               <button class="button button-ghost" id="stop-camera" type="button" hidden>Detener</button>
               <label class="upload-link" for="qr-upload">Leer captura</label>
-              <input id="qr-upload" type="file" accept="image/*" hidden />
+              <input id="qr-upload" type="file" accept="image/*" capture="environment" hidden />
             </div>
-            <p class="scanner-help" id="scanner-help">Compatible con camaras modernas. Tambien puedes leer una captura del QR.</p>
+            <p class="scanner-help" id="scanner-help">Compatible con Safari en iPhone y navegadores Android actuales. Si tu navegador no abre la camara, usa Leer captura para tomar una foto del QR.</p>
           </article>
 
           <article class="manual-card">

@@ -16,7 +16,7 @@ const seedTickets = [
 
 let tickets = loadTickets();
 let currentFilter = "all";
-let scannerState = { stream: null, detector: null, animationFrame: null, lastValue: "" };
+let scannerState = { stream: null, detector: null, animationFrame: null, lastValue: "", libraryScanner: null, isValidating: false };
 let toastTimeout;
 let deferredInstallPrompt;
 let adminSession = null;
@@ -54,6 +54,7 @@ const elements = {
   startCamera: document.querySelector("#start-camera"),
   stopCamera: document.querySelector("#stop-camera"),
   cameraVideo: document.querySelector("#camera-video"),
+  cameraReader: document.querySelector("#camera-reader"),
   cameraStatus: document.querySelector("#camera-status"),
   scanFrame: document.querySelector("#scan-frame"),
   scanIdle: document.querySelector("#scan-idle"),
@@ -733,49 +734,95 @@ async function validateTicket(rawValue) {
 }
 
 async function startCamera() {
-  if (!("BarcodeDetector" in window)) {
-    setCameraState("Lectura no disponible", "error");
-    elements.scannerHelp.textContent = "Este navegador no permite leer QR desde la camara. Usa el codigo manual o una version reciente de Chrome en movil.";
-    return;
-  }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     setCameraState("Camara no disponible", "error");
     elements.scannerHelp.textContent = "Tu dispositivo no expone una camara para este sitio.";
     return;
   }
+  if (scannerState.libraryScanner || scannerState.stream) return;
 
   try {
-    scannerState.detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-    scannerState.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
-    elements.cameraVideo.srcObject = scannerState.stream;
-    elements.cameraVideo.hidden = false;
     elements.scanIdle.hidden = true;
     elements.scanFrame.classList.add("is-scanning");
     elements.startCamera.hidden = true;
     elements.stopCamera.hidden = false;
+    setCameraState("Activando", "running");
+    elements.scannerHelp.textContent = "Permite el acceso a la camara y apunta al QR dentro del marco.";
+    if (typeof window.Html5Qrcode === "function") await startCrossBrowserCamera();
+    else if ("BarcodeDetector" in window) await startNativeCamera();
+    else throw new Error("QR camera scanning is not supported.");
+
     setCameraState("Escaneando", "running");
     elements.scannerHelp.textContent = "Acerca el QR hasta que quede dentro del marco. La camara se detendra despues de una lectura valida.";
-    await elements.cameraVideo.play();
-    scanCameraFrame();
   } catch (error) {
     stopCamera();
-    setCameraState("Permiso requerido", "error");
-    elements.scannerHelp.textContent = "No pudimos activar la camara. Revisa el permiso del navegador o usa el ingreso manual.";
+    const permissionDenied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
+    setCameraState(permissionDenied ? "Permiso requerido" : "Camara no disponible", "error");
+    elements.scannerHelp.textContent = permissionDenied
+      ? "Permite el acceso a la camara en los ajustes del navegador e intentalo de nuevo."
+      : "No pudimos activar la camara. Revisa que uses HTTPS, cierres otras apps que la usen e intentalo de nuevo.";
   }
+}
+
+function qrFormats() {
+  const qrCode = window.Html5QrcodeSupportedFormats?.QR_CODE;
+  return typeof qrCode === "number" ? [qrCode] : undefined;
+}
+
+async function startCrossBrowserCamera() {
+  const formatsToSupport = qrFormats();
+  const scanner = new window.Html5Qrcode("camera-reader", formatsToSupport ? { formatsToSupport } : undefined);
+  scannerState.libraryScanner = scanner;
+  elements.cameraReader.hidden = false;
+  await scanner.start(
+    { facingMode: { ideal: "environment" } },
+    {
+      fps: 10,
+      qrbox: (width, height) => {
+        const size = Math.floor(Math.min(width, height) * .7);
+        return { width: size, height: size };
+      },
+      aspectRatio: 1.333334,
+      disableFlip: false
+    },
+    (decodedText) => { void handleScannedValue(decodedText); },
+    () => {}
+  );
+  if (scannerState.libraryScanner !== scanner) {
+    await scanner.stop().catch(() => {});
+    try { scanner.clear(); } catch {}
+  }
+}
+
+async function startNativeCamera() {
+  scannerState.detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+  scannerState.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+  elements.cameraVideo.srcObject = scannerState.stream;
+  elements.cameraVideo.hidden = false;
+  await elements.cameraVideo.play();
+  scanCameraFrame();
+}
+
+async function handleScannedValue(rawValue) {
+  if (!rawValue || rawValue === scannerState.lastValue || scannerState.isValidating) return;
+  scannerState.lastValue = rawValue;
+  scannerState.isValidating = true;
+  const valid = await validateTicket(rawValue);
+  scannerState.isValidating = false;
+  if (valid) {
+    stopCamera();
+    return;
+  }
+  window.setTimeout(() => {
+    if (scannerState.lastValue === rawValue) scannerState.lastValue = "";
+  }, 1200);
 }
 
 async function scanCameraFrame() {
   if (!scannerState.detector || !scannerState.stream) return;
   try {
     const codes = await scannerState.detector.detect(elements.cameraVideo);
-    if (codes.length && codes[0].rawValue && codes[0].rawValue !== scannerState.lastValue) {
-      scannerState.lastValue = codes[0].rawValue;
-      const valid = await validateTicket(codes[0].rawValue);
-      if (valid) {
-        stopCamera();
-        return;
-      }
-    }
+    if (codes.length) void handleScannedValue(codes[0].rawValue);
   } catch {
     // A frame can be unavailable while the video starts; keep the reader alive.
   }
@@ -785,13 +832,27 @@ async function scanCameraFrame() {
 function stopCamera() {
   if (scannerState.animationFrame) window.cancelAnimationFrame(scannerState.animationFrame);
   scannerState.animationFrame = null;
+  const libraryScanner = scannerState.libraryScanner;
+  scannerState.libraryScanner = null;
+  if (libraryScanner) {
+    void libraryScanner.stop()
+      .catch(() => {})
+      .then(() => { try { libraryScanner.clear(); } catch {} })
+      .finally(() => {
+        if (!scannerState.libraryScanner) elements.cameraReader.replaceChildren();
+      });
+  } else {
+    elements.cameraReader.replaceChildren();
+  }
   if (scannerState.stream) scannerState.stream.getTracks().forEach((track) => track.stop());
   scannerState.stream = null;
   scannerState.detector = null;
   scannerState.lastValue = "";
+  scannerState.isValidating = false;
   elements.cameraVideo.pause();
   elements.cameraVideo.srcObject = null;
   elements.cameraVideo.hidden = true;
+  elements.cameraReader.hidden = true;
   elements.scanIdle.hidden = false;
   elements.scanFrame.classList.remove("is-scanning");
   elements.startCamera.hidden = false;
@@ -806,8 +867,28 @@ function setCameraState(label, mode = "idle") {
 
 async function scanUploadedImage(file) {
   if (!file) return;
+  if (scannerState.libraryScanner || scannerState.stream) {
+    setValidationResult("Deten la camara antes de leer una captura.", "warning", "!");
+    elements.qrUpload.value = "";
+    return;
+  }
   if (!("BarcodeDetector" in window)) {
-    setValidationResult("Este navegador no puede leer QR desde una imagen. Pega el codigo manualmente.", "error", "!");
+    if (typeof window.Html5Qrcode !== "function") {
+      setValidationResult("Este navegador no puede leer QR desde una imagen. Pega el codigo manualmente.", "error", "!");
+      return;
+    }
+    try {
+      const formatsToSupport = qrFormats();
+      const scanner = new window.Html5Qrcode("camera-reader", formatsToSupport ? { formatsToSupport } : undefined);
+      const rawValue = await scanner.scanFile(file, false);
+      try { scanner.clear(); } catch {}
+      await validateTicket(rawValue);
+    } catch {
+      setValidationResult("No se pudo leer esa captura. Pega el codigo de la boleta para validar.", "error", "!");
+    } finally {
+      elements.cameraReader.replaceChildren();
+      elements.qrUpload.value = "";
+    }
     return;
   }
   try {
