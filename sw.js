@@ -1,4 +1,4 @@
-const CACHE_NAME = "mf-tickets-v6";
+const CACHE_NAME = "mf-tickets-v7";
 const RUNTIME_ASSETS = new Set([
   "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"

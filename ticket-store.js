@@ -57,6 +57,12 @@
       return rows[0];
     },
 
+    async deleteTicket(id) {
+      const rows = await unwrap(requireClient().from("event_tickets").delete().eq("id", id).select("id"));
+      if (!rows?.[0]) throw new Error("La boleta ya no está disponible para eliminar.");
+      return rows[0];
+    },
+
     async checkInTicket(code, eventName) {
       const rows = await unwrap(requireClient().rpc("check_in_ticket", { p_code: code, p_event_name: eventName }));
       return rows[0] || null;

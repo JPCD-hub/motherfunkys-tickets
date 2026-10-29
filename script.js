@@ -447,8 +447,9 @@ function openTicketView(ticketId) {
           <button class="button button-outline" type="button" data-view-action="public" data-ticket-id="${escapeHTML(ticket.id)}">Ver versión móvil</button>
           <button class="button button-outline" type="button" data-view-action="download" data-ticket-id="${escapeHTML(ticket.id)}">Descargar boleta</button>
           ${ticket.status !== "checked-in" ? `<button class="button button-outline" type="button" data-view-action="checkin" data-ticket-id="${escapeHTML(ticket.id)}">Registrar ingreso</button>` : ""}
+          <button class="button button-red" type="button" data-view-action="delete" data-ticket-id="${escapeHTML(ticket.id)}">Eliminar boleta</button>
         </div>
-        <p class="view-note">El QR es individual y se marca como usado al registrar el ingreso.</p>
+        <p class="view-note">El QR es individual y se marca como usado al registrar el ingreso. Eliminar una boleta invalida su enlace público.</p>
         ${ticket.phone ? `<p class="view-note view-note--whatsapp">En móvil, este botón adjunta la boleta con QR para compartirla en WhatsApp. En escritorio abre el chat y descarga la imagen para adjuntarla.</p>` : ""}
       </section>
     </div>
@@ -497,6 +498,25 @@ function changeTicketStatus(ticket, status) {
       renderTickets();
       showToast("No se pudo actualizar esta boleta en Supabase.", "error");
     });
+}
+
+async function deleteTicket(ticketId) {
+  if (!requireAdminSession()) return;
+  const ticket = getTicket(ticketId);
+  if (!ticket) return;
+  const confirmed = window.confirm(`¿Eliminar la boleta de ${ticket.name}? Esta acción no se puede deshacer.`);
+  if (!confirmed) return;
+
+  try {
+    if (usesSupabase()) await window.TicketStore.deleteTicket(ticket.id);
+    tickets = tickets.filter((entry) => entry.id !== ticket.id);
+    saveTickets();
+    renderTicketInterface();
+    if (elements.ticketViewDialog.open) closeDialog(elements.ticketViewDialog);
+    showToast(`Boleta eliminada para ${ticket.name}.`);
+  } catch {
+    showToast("No se pudo eliminar esta boleta. Revisa la conexión e inténtalo de nuevo.", "error");
+  }
 }
 
 function normalizedPhone(phone) {
@@ -1015,6 +1035,7 @@ function bindEvents() {
       if (ticket) window.open(ticketPublicUrl(ticket), "_blank", "noopener,noreferrer");
     }
     if (button.dataset.viewAction === "download") void downloadTicketQr(ticketId);
+    if (button.dataset.viewAction === "delete") void deleteTicket(ticketId);
     if (button.dataset.viewAction === "checkin") {
       const ticket = getTicket(ticketId);
       if (ticket) {
