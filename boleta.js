@@ -12,7 +12,10 @@ const elements = {
   qr: document.querySelector("#ticket-qr"),
   status: document.querySelector("#ticket-status"),
   help: document.querySelector("#ticket-help"),
-  install: document.querySelector("#install-ticket-app")
+  install: document.querySelector("#install-ticket-app"),
+  lookupForm: document.querySelector("#ticket-lookup-form"),
+  lookupInput: document.querySelector("#ticket-lookup-input"),
+  lookupFeedback: document.querySelector("#ticket-lookup-feedback")
 };
 
 let deferredInstallPrompt;
@@ -149,6 +152,48 @@ function showError(message) {
   elements.error.hidden = false;
 }
 
+function ticketUrlFromLookup(value) {
+  const input = String(value || "").trim();
+  if (!input) return null;
+
+  if (isPublicToken(input)) {
+    const url = new URL("boleta.html", window.location.href);
+    url.searchParams.set("t", input);
+    return url.href;
+  }
+
+  try {
+    const source = new URL(input, window.location.href);
+    const token = source.searchParams.get("t");
+    const preview = source.searchParams.get("ticket");
+    const url = new URL("boleta.html", window.location.href);
+    if (isPublicToken(token)) {
+      url.searchParams.set("t", token);
+      return url.href;
+    }
+    if (preview && decodePreview(preview)) {
+      url.searchParams.set("ticket", preview);
+      return url.href;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function setupTicketLookup() {
+  elements.lookupForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const ticketUrl = ticketUrlFromLookup(elements.lookupInput.value);
+    if (!ticketUrl) {
+      elements.lookupFeedback.textContent = "Pega el enlace completo que recibiste por WhatsApp.";
+      return;
+    }
+    window.location.assign(ticketUrl);
+  });
+}
+
 function setupPwa() {
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}), { once: true });
@@ -168,6 +213,7 @@ function setupPwa() {
 }
 
 async function initialize() {
+  setupTicketLookup();
   setupPwa();
   const params = new URLSearchParams(window.location.search);
   const preview = decodePreview(params.get("ticket") || "");

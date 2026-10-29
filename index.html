@@ -58,11 +58,12 @@
           <p class="eyebrow">CONTROL DE ACCESO / FUNK EN VIVO</p>
           <h1 id="page-title">Preventa y puerta, <em>un mismo groove.</em></h1>
           <p class="hero-lead">
-            Envía preventas por WhatsApp y emite boletas en puerta con un QR único para cada persona.
+            Envía enlaces de preventa por WhatsApp y emite boletas en puerta con un QR único para cada persona.
           </p>
           <div class="hero-actions">
             <button class="button button-primary" type="button" data-open-ticket-form>Nueva boleta</button>
             <a class="button button-outline" href="#ingresos">Abrir control de puerta</a>
+            <a class="button button-outline" href="boleta.html">Buscar mi boleta</a>
           </div>
           <p class="hero-note"><span class="live-dot" aria-hidden="true"></span> Operación activa para Funk en la terraza</p>
         </div>
@@ -102,7 +103,7 @@
           <span class="type-number">01</span>
           <p class="type-kicker">WHATSAPP / ANTES DEL SHOW</p>
           <h3>Preventa</h3>
-          <p>Se crea para una persona y se comparte con su QR por WhatsApp antes de llegar.</p>
+          <p>Se crea para una persona y se comparte con un enlace personal por WhatsApp antes de llegar.</p>
           <button class="button button-primary" type="button" data-open-ticket-form data-ticket-type="Preventa">Crear preventa</button>
         </article>
         <article class="ticket-kind-card ticket-kind-card--door">
@@ -135,7 +136,7 @@
               <label class="upload-link" for="qr-upload">Leer captura</label>
               <input id="qr-upload" type="file" accept="image/*" hidden />
             </div>
-            <p class="scanner-help" id="scanner-help">Compatible con camaras modernas. Tambien puedes leer una captura recibida por WhatsApp.</p>
+            <p class="scanner-help" id="scanner-help">Compatible con camaras modernas. Tambien puedes leer una captura del QR.</p>
           </article>
 
           <article class="manual-card">
@@ -178,7 +179,7 @@
           <h3 id="delivery-title">Dos tipos de boleta. Un QR por persona.</h3>
           <ol>
             <li><span>01</span><p><b>Elige el tipo</b>Preventa para WhatsApp o En puerta para emitir al llegar.</p></li>
-            <li><span>02</span><p><b>Entrega el QR</b>Compártelo por WhatsApp o muéstralo desde el control de acceso.</p></li>
+            <li><span>02</span><p><b>Entrega el enlace</b>Compártelo por WhatsApp; la persona abre su boleta y presenta el QR.</p></li>
             <li><span>03</span><p><b>Escanéalo en puerta</b>El ingreso queda registrado de inmediato.</p></li>
           </ol>
           <div class="delivery-foot"><span class="lock-mark" aria-hidden="true">*</span><p>Con Supabase, cada ingreso se sincroniza entre los dispositivos del equipo.</p></div>
@@ -208,7 +209,7 @@
           <label class="form-field form-field-full">Nombre completo<input id="ticket-name" name="name" required maxlength="80" autocomplete="name" placeholder="Ej. Laura Acevedo" /></label>
           <label class="form-field" id="phone-field"><span id="phone-field-label">WhatsApp de preventa</span><input id="ticket-phone" name="phone" required inputmode="tel" maxlength="30" autocomplete="tel" placeholder="300 000 0000" /></label>
           <label class="form-field">Tipo de boleta<select id="ticket-type" name="type"><option value="Preventa">Preventa · compartir por WhatsApp</option><option value="En puerta">En puerta · emitir al llegar</option></select></label>
-          <p class="type-form-note form-field-full" id="ticket-type-help">La preventa necesita un WhatsApp para compartir su QR.</p>
+          <p class="type-form-note form-field-full" id="ticket-type-help">La preventa necesita un WhatsApp para enviar su enlace personal.</p>
           <label class="form-field form-field-full">Nota interna <span>(opcional)</span><textarea id="ticket-note" name="note" maxlength="160" placeholder="Ej. Invitada de produccion"></textarea></label>
         </div>
         <div class="modal-footer"><p id="ticket-form-feedback" class="form-feedback" aria-live="polite"></p><div><button class="button button-outline" type="button" data-close-dialog="ticket-form-dialog">Cancelar</button><button class="button button-primary" type="submit">Crear boleta</button></div></div>

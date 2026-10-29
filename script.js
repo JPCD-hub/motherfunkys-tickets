@@ -392,9 +392,9 @@ function syncTicketFormForType() {
   const isPresale = elements.ticketType.value === TICKET_TYPES.PRESALE;
   elements.ticketPhone.required = isPresale;
   elements.phoneFieldLabel.textContent = isPresale ? "WhatsApp de preventa" : "WhatsApp (opcional)";
-  elements.ticketPhone.placeholder = isPresale ? "300 000 0000" : "Opcional para enviar el QR";
+  elements.ticketPhone.placeholder = isPresale ? "300 000 0000" : "Opcional para enviar enlace";
   elements.ticketTypeHelp.textContent = isPresale
-    ? "La preventa necesita un WhatsApp para compartir su QR antes del show."
+    ? "La preventa necesita un WhatsApp para enviar su enlace personal antes del show."
     : "La boleta en puerta se puede emitir sin WhatsApp y validar desde este mismo panel.";
 }
 
@@ -443,14 +443,14 @@ function openTicketView(ticketId) {
           ${ticket.note ? `<div><dt>NOTA INTERNA</dt><dd>${escapeHTML(ticket.note)}</dd></div>` : ""}
         </dl>
         <div class="view-actions">
-          ${ticket.phone && ticket.status !== "checked-in" ? `<button class="button button-primary button-whatsapp" type="button" data-view-action="share" data-ticket-id="${escapeHTML(ticket.id)}">Enviar boleta por WhatsApp</button>` : ""}
+          ${ticket.phone && ticket.status !== "checked-in" ? `<button class="button button-primary button-whatsapp" type="button" data-view-action="share" data-ticket-id="${escapeHTML(ticket.id)}">Enviar enlace por WhatsApp</button>` : ""}
           <button class="button button-outline" type="button" data-view-action="public" data-ticket-id="${escapeHTML(ticket.id)}">Ver versión móvil</button>
           <button class="button button-outline" type="button" data-view-action="download" data-ticket-id="${escapeHTML(ticket.id)}">Descargar boleta</button>
           ${ticket.status !== "checked-in" ? `<button class="button button-outline" type="button" data-view-action="checkin" data-ticket-id="${escapeHTML(ticket.id)}">Registrar ingreso</button>` : ""}
           <button class="button button-red" type="button" data-view-action="delete" data-ticket-id="${escapeHTML(ticket.id)}">Eliminar boleta</button>
         </div>
         <p class="view-note">El QR es individual y se marca como usado al registrar el ingreso. Eliminar una boleta invalida su enlace público.</p>
-        ${ticket.phone ? `<p class="view-note view-note--whatsapp">En móvil, este botón adjunta la boleta con QR para compartirla en WhatsApp. En escritorio abre el chat y descarga la imagen para adjuntarla.</p>` : ""}
+        ${ticket.phone ? `<p class="view-note view-note--whatsapp">WhatsApp recibirá un enlace personal. La persona solo tiene que abrirlo y presentar el QR en puerta.</p>` : ""}
       </section>
     </div>
   `;
@@ -525,7 +525,7 @@ function normalizedPhone(phone) {
   return digits;
 }
 
-async function shareTicket(ticketId) {
+function shareTicket(ticketId) {
   if (!requireAdminSession()) return;
   const ticket = getTicket(ticketId);
   if (!ticket) return;
@@ -533,43 +533,15 @@ async function shareTicket(ticketId) {
     showToast("Esta boleta en puerta no necesita enviarse por WhatsApp.", "error");
     return;
   }
-  const message = `Hola ${ticket.name}, aquí está tu boleta de ${normalizeTicketType(ticket.type)} para ${ACTIVE_EVENT}. Puedes abrirla desde este enlace y presentar el QR en puerta.\n\n${ticketPublicUrl(ticket)}\n\nCódigo: ${ticket.code}`;
-  let usedNativeShare = false;
-  const canShareFiles = Boolean(
-    navigator.share &&
-    navigator.canShare &&
-    window.File &&
-    navigator.canShare({ files: [new File([""], "boleta.png", { type: "image/png" })] })
-  );
-
-  if (canShareFiles) {
-    try {
-      const file = await qrFileForTicket(ticket);
-      if (file && navigator.canShare({ files: [file] })) {
-        await navigator.share({ title: `Boleta ${ACTIVE_EVENT}`, text: message, files: [file] });
-        usedNativeShare = true;
-      }
-    } catch (error) {
-      if (error && error.name === "AbortError") return;
-    }
-  }
-
-  if (!usedNativeShare) {
-    const phone = normalizedPhone(ticket.phone);
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    if (canShareFiles) window.location.assign(url);
-    else {
-      window.open(url, "_blank", "noopener,noreferrer");
-      void downloadTicketQr(ticket.id, false);
-    }
-  }
+  const message = `Hola ${ticket.name}, aquí está tu boleta para ${ACTIVE_EVENT}:\n\n${ticketPublicUrl(ticket)}\n\nAbre este enlace y presenta el QR en puerta.`;
+  const phone = normalizedPhone(ticket.phone);
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  const whatsappWindow = window.open(url, "_blank");
+  if (whatsappWindow) whatsappWindow.opener = null;
+  else window.location.assign(url);
 
   changeTicketStatus(ticket, "sent");
-  showToast(usedNativeShare
-    ? "Elige WhatsApp para enviar la boleta con su QR adjunto."
-    : canShareFiles
-      ? "Se abrió WhatsApp con el código de la boleta."
-      : "Se abrió WhatsApp y se descargó la boleta QR para adjuntarla.");
+  showToast("Se abrió WhatsApp con el enlace personal de la boleta.");
   if (elements.ticketViewDialog.open) openTicketView(ticket.id);
 }
 
@@ -680,7 +652,7 @@ async function downloadTicketQr(ticketId, announce = true) {
   link.download = `boleta-${ticket.code}.png`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(link.href), 500);
-  if (announce) showToast("Boleta QR descargada. Ya puedes adjuntarla en WhatsApp.");
+  if (announce) showToast("Boleta QR descargada.");
   return true;
 }
 

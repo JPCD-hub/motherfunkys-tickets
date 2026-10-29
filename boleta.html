@@ -38,9 +38,17 @@
       </section>
 
       <section class="ticket-error" id="ticket-error" hidden aria-live="polite">
-        <span class="error-code">404</span>
-        <h1>Esta boleta no está <em>disponible.</em></h1>
+        <span class="error-code">BOLETA DIGITAL</span>
+        <h1>Encuentra tu <em>boleta.</em></h1>
         <p id="ticket-error-copy">Revisa el enlace recibido por WhatsApp o solicita una nueva boleta al equipo del evento.</p>
+        <form class="ticket-lookup" id="ticket-lookup-form">
+          <label for="ticket-lookup-input">PEGA TU ENLACE DE WHATSAPP</label>
+          <div class="ticket-lookup-row">
+            <input id="ticket-lookup-input" type="text" autocomplete="url" placeholder="https://.../boleta.html?t=..." />
+            <button type="submit">Ver boleta</button>
+          </div>
+          <p class="ticket-lookup-feedback" id="ticket-lookup-feedback" aria-live="polite"></p>
+        </form>
         <a href="./" class="back-link">Volver al inicio</a>
       </section>
 
