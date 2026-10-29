@@ -599,8 +599,8 @@ function drawTicketImage(canvas, ticket, qrCanvas) {
   context.beginPath();
   context.moveTo(90, 270);
   context.lineTo(canvas.width - 90, 270);
-  context.moveTo(90, 1095);
-  context.lineTo(canvas.width - 90, 1095);
+  context.moveTo(90, 1125);
+  context.lineTo(canvas.width - 90, 1125);
   context.stroke();
 
   context.fillStyle = "#fff2c2";
@@ -629,15 +629,19 @@ function drawTicketImage(canvas, ticket, qrCanvas) {
   context.fillText("FUNK EN LA TERRAZA", 90, 438);
   context.fillText("SAB 18 OCT / 20:00 / TERRAZA 02", 90, 482);
 
+  const qrSize = 560;
+  const qrLeft = (canvas.width - qrSize) / 2;
+  const qrTop = 535;
+  const qrInset = 26;
   context.fillStyle = "#fff2c2";
-  context.fillRect(180, 548, 720, 720);
-  context.drawImage(qrCanvas, 207, 575, 666, 666);
+  context.fillRect(qrLeft, qrTop, qrSize, qrSize);
+  context.drawImage(qrCanvas, qrLeft + qrInset, qrTop + qrInset, qrSize - qrInset * 2, qrSize - qrInset * 2);
   context.fillStyle = accent;
   context.font = "700 23px Arial, sans-serif";
-  context.fillText("QR PERSONAL DE ACCESO", 90, 1163);
+  context.fillText("QR PERSONAL DE ACCESO", 90, 1175);
   context.fillStyle = "#fff2c2";
   context.font = "600 26px monospace";
-  context.fillText(ticket.code, 90, 1211);
+  context.fillText(ticket.code, 90, 1222);
   context.fillStyle = "rgba(255, 242, 194, .75)";
   context.font = "500 22px Arial, sans-serif";
   context.fillText("Una sola lectura valida esta boleta.", 90, 1270);
