@@ -236,7 +236,6 @@ h1 em, h2 i { color: var(--hot); font-family: "Shrikhand", "Cooper Black", cursi
 .view-ticket { background: radial-gradient(circle at 88% 10%, rgba(255, 63, 129, .5), transparent 30%), linear-gradient(145deg, #551592, #190a2d 65%, #0e0714); }.view-ticket--door { background: radial-gradient(circle at 84% 9%, rgba(201, 255, 46, .24), transparent 30%), linear-gradient(145deg, #33105f, #0e0714 72%); }.view-ticket-kind { color: var(--orange); }.view-ticket-kind--door { color: var(--green); }.view-details h2, .ticket-detail-list dd { color: var(--cream); }.ticket-detail-list dt { color: var(--green); }.view-note { color: var(--muted); }.view-close { background: var(--deep); }
 .button-whatsapp { gap: 8px; }.button-whatsapp::before { display: inline-grid; width: 19px; height: 19px; place-items: center; border-radius: 50%; color: var(--deep); background: var(--cream); content: "WA"; font-size: 7px; font-weight: 800; }.row-button--whatsapp { color: var(--green); text-decoration-color: var(--orange); }.view-note--whatsapp { margin-top: 7px; color: var(--green); }
 .toast { border-left-color: var(--orange); color: var(--deep); background: var(--cream); }.toast.is-success { border-color: var(--green); }.toast.is-error { border-color: var(--hot); }
-.install-button { position: fixed; z-index: 45; right: 18px; bottom: 18px; min-height: 44px; border: 2px solid var(--cream); border-radius: 999px; padding: 10px 15px; color: var(--deep); background: var(--green); box-shadow: 4px 4px 0 rgba(0, 0, 0, .34); font-family: "Space Grotesk", Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: .2px; }
 
 @media (max-width: 900px) {
   .ticket-types { grid-template-columns: repeat(2, minmax(0, 1fr)); }.ticket-types-intro { grid-column: 1 / -1; padding-right: 0; }
@@ -247,7 +246,7 @@ h1 em, h2 i { color: var(--hot); font-family: "Shrikhand", "Cooper Black", cursi
 }
 
 @media (max-width: 410px) {
-  .ticket-types { width: min(calc(100% - 26px), var(--content)); }.brand-logo { width: 110px; height: 47px; }.install-button { right: 12px; bottom: 12px; }
+  .ticket-types { width: min(calc(100% - 26px), var(--content)); }.brand-logo { width: 110px; height: 47px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
