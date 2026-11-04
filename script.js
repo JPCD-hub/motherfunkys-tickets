@@ -1187,10 +1187,7 @@ async function startCrossBrowserCamera() {
     { facingMode: "environment" },
     {
       fps: 10,
-      qrbox: (width, height) => {
-        const size = Math.floor(Math.min(width, height) * .82);
-        return { width: size, height: size };
-      },
+      // Scan the full video frame; the app renders the only visual guide.
       aspectRatio: 1.333334,
       disableFlip: false
     },
