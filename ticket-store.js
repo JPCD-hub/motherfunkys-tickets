@@ -39,9 +39,44 @@
       if (error) throw new Error(error.message);
     },
 
-    async listTickets(eventName) {
+    async listPublicEvents() {
+      return unwrap(requireClient().rpc("public_events"));
+    },
+
+    async isEventAdmin() {
+      return Boolean(await unwrap(requireClient().rpc("is_event_admin")));
+    },
+
+    async listEvents() {
+      return unwrap(
+        requireClient()
+          .from("events")
+          .select("*")
+          .order("is_active", { ascending: false })
+          .order("event_date", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false })
+      );
+    },
+
+    async createEvent(event) {
+      const rows = await unwrap(requireClient().from("events").insert(event).select().limit(1));
+      if (!rows[0]) throw new Error("Supabase no devolvió el evento creado.");
+      return rows[0];
+    },
+
+    async updateEvent(id, changes) {
+      const rows = await unwrap(requireClient().from("events").update(changes).eq("id", id).select().limit(1));
+      if (!rows[0]) throw new Error("El evento ya no está disponible para actualizar.");
+      return rows[0];
+    },
+
+    async setActiveEvent(id) {
+      await unwrap(requireClient().rpc("set_active_event", { p_event_id: id }));
+    },
+
+    async listTickets(eventId) {
       let request = requireClient().from("event_tickets").select("*").order("created_at", { ascending: false });
-      if (eventName) request = request.eq("event_name", eventName);
+      if (eventId) request = request.eq("event_id", eventId);
       return unwrap(request);
     },
 
@@ -63,8 +98,8 @@
       return rows[0];
     },
 
-    async checkInTicket(code, eventName) {
-      const rows = await unwrap(requireClient().rpc("check_in_ticket", { p_code: code, p_event_name: eventName }));
+    async checkInTicket(code, eventId) {
+      const rows = await unwrap(requireClient().rpc("check_in_ticket", { p_code: code, p_event_id: eventId }));
       return rows[0] || null;
     }
   };

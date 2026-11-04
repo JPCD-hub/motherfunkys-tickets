@@ -1,3 +1,4 @@
+-- New project baseline. Run events-migration.sql immediately afterward for multi-event support.
 create extension if not exists pgcrypto;
 
 create table if not exists public.event_tickets (
@@ -17,13 +18,37 @@ create table if not exists public.event_tickets (
 
 alter table public.event_tickets enable row level security;
 
+create or replace function public.is_event_admin()
+returns boolean
+language sql
+stable
+set search_path = public
+as $$
+  select auth.uid() is not null
+    and lower(coalesce(auth.jwt() ->> 'email', '')) = 'losmotherfunkys@gmail.com';
+$$;
+
+revoke all on function public.is_event_admin() from public;
+grant execute on function public.is_event_admin() to authenticated;
+
 drop policy if exists "authenticated staff can manage tickets" on public.event_tickets;
-create policy "authenticated staff can manage tickets"
+drop policy if exists "authenticated staff can read tickets" on public.event_tickets;
+drop policy if exists "authenticated staff can create tickets" on public.event_tickets;
+drop policy if exists "authenticated staff can update unvalidated tickets" on public.event_tickets;
+drop policy if exists "authenticated staff can delete tickets" on public.event_tickets;
+drop policy if exists "administrators can delete tickets" on public.event_tickets;
+drop policy if exists "administrators can manage tickets" on public.event_tickets;
+
+create policy "administrators can manage tickets"
 on public.event_tickets
 for all
 to authenticated
-using (true)
-with check (true);
+using (
+  public.is_event_admin()
+)
+with check (
+  public.is_event_admin()
+);
 
 create or replace function public.public_ticket(p_token uuid)
 returns table (
@@ -71,8 +96,8 @@ as $$
 declare
   ticket public.event_tickets%rowtype;
 begin
-  if auth.uid() is null then
-    raise exception 'Authentication required for check-in';
+  if not public.is_event_admin() then
+    raise exception 'Administrator access required for check-in';
   end if;
 
   select * into ticket

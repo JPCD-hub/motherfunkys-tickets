@@ -8,6 +8,7 @@ const elements = {
   type: document.querySelector("#ticket-type"),
   holder: document.querySelector("#ticket-holder"),
   event: document.querySelector("#ticket-event"),
+  eventDetails: document.querySelector("#ticket-event-details"),
   code: document.querySelector("#ticket-code"),
   qr: document.querySelector("#ticket-qr"),
   status: document.querySelector("#ticket-status"),
@@ -50,6 +51,28 @@ function formatCheckinTime(value) {
   return new Intl.DateTimeFormat("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
+function formatEventDate(value) {
+  if (!value) return "";
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return "";
+  const formatted = new Intl.DateTimeFormat("es-CO", { weekday: "short", day: "numeric", month: "short" }).format(date);
+  return formatted.charAt(0).toLocaleUpperCase("es-CO") + formatted.slice(1);
+}
+
+function formatEventTime(value) {
+  return String(value || "").slice(0, 5);
+}
+
+function eventDetails(ticket) {
+  const doors = [formatEventTime(ticket.doorsOpenAt), formatEventTime(ticket.doorsCloseAt)].filter(Boolean).join(" - ");
+  return [
+    formatEventDate(ticket.eventDate),
+    doors ? `Puertas ${doors}` : "",
+    ticket.showTime ? `Show ${formatEventTime(ticket.showTime)}` : "",
+    ticket.venue || ""
+  ].filter(Boolean).join(" / ");
+}
+
 async function getRemoteTicket(token) {
   const config = window.MF_SUPABASE_CONFIG;
   const client = window.supabase.createClient(config.url, config.anonKey);
@@ -63,6 +86,11 @@ async function getRemoteTicket(token) {
     name: row.holder_name,
     type: row.ticket_type,
     event: row.event_name,
+    eventDate: row.event_date || "",
+    doorsOpenAt: row.doors_open_at || "",
+    doorsCloseAt: row.doors_close_at || "",
+    showTime: row.show_time || "",
+    venue: row.venue || "",
     status: row.status,
     checkedInAt: row.checked_in_at || ""
   };
@@ -131,7 +159,10 @@ function renderTicket(ticket) {
   elements.type.textContent = type;
   elements.type.dataset.type = type === "EN PUERTA" ? "door" : "presale";
   elements.holder.textContent = ticket.name;
-  elements.event.textContent = ticket.event || "FUNK EN LA TERRAZA";
+  elements.event.textContent = ticket.event || "Evento";
+  const details = eventDetails(ticket);
+  elements.eventDetails.textContent = details;
+  elements.eventDetails.hidden = !details;
   elements.code.textContent = ticket.code;
   elements.status.classList.toggle("is-used", used);
   elements.status.querySelector("span").textContent = used ? "USADA" : "OK";

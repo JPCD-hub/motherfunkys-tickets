@@ -40,8 +40,8 @@
 
       <nav class="main-nav" aria-label="Navegacion principal">
         <a class="is-active" href="#inicio">Panel</a>
-        <a href="#boletas">Boletas</a>
-        <a href="#ingresos">Ingresos</a>
+        <a href="#boletas" id="ticket-nav-link" hidden>Boletas</a>
+        <a href="#ingresos" id="gate-nav-link" hidden>Ingresos</a>
       </nav>
 
       <div class="operator">
@@ -62,11 +62,11 @@
             Envía enlaces de preventa por WhatsApp y emite boletas en puerta con un QR único para cada persona.
           </p>
           <div class="hero-actions">
-            <button class="button button-primary" type="button" data-open-ticket-form>Nueva boleta</button>
-            <a class="button button-outline" href="#ingresos">Abrir control de puerta</a>
+            <button class="button button-primary" type="button" data-open-ticket-form hidden>Nueva boleta</button>
+            <a class="button button-outline" href="#ingresos" id="gate-action-link" hidden>Abrir control de puerta</a>
             <a class="button button-outline" href="boleta.html">Buscar mi boleta</a>
           </div>
-          <p class="hero-note"><span class="live-dot" aria-hidden="true"></span> Operación activa para Funk en la terraza</p>
+          <p class="hero-note" id="hero-active-note"><span class="live-dot" aria-hidden="true"></span> Operación activa para Funk en la terraza</p>
         </div>
 
         <article class="hero-ticket" aria-label="Vista previa de una boleta QR">
@@ -74,14 +74,14 @@
           <div class="ticket-brand">MOTHER<br /><i>FUNKY'S</i></div>
           <div class="ticket-rhythm" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
           <div class="ticket-bottom">
-            <div><b>FUNK EN LA<br />TERRAZA</b><small>SAB 18 OCT / 20:00</small></div>
+            <div><b id="hero-ticket-event">FUNK EN LA<br />TERRAZA</b><small id="hero-ticket-details">SAB 18 OCT / 20:00</small></div>
             <div class="hero-qr qr-host" data-qr-code="MFK-D3M0-7QRA" aria-label="Codigo QR de muestra"></div>
           </div>
           <span class="ticket-sticker">PREVENTA ACTIVA</span>
         </article>
       </section>
 
-      <section class="stats" aria-label="Resumen del evento">
+      <section class="stats" id="ticket-stats" aria-label="Resumen del evento" hidden>
         <article><span>PREVENTAS</span><strong id="stat-presale">0</strong><small id="stat-presale-note">listas para compartir</small></article>
         <article><span>EN PUERTA</span><strong id="stat-door">0</strong><small id="stat-door-note">emitidas en acceso</small></article>
         <article><span>INGRESOS HOY</span><strong id="stat-checkins">0</strong><small id="stat-checkins-note">validados por QR</small></article>
@@ -89,12 +89,12 @@
       </section>
 
       <section class="event-strip" aria-label="Evento activo">
-        <div class="event-strip-title"><span class="event-pulse" aria-hidden="true"></span><div><p>EVENTO ACTIVO</p><strong>Funk en la terraza</strong></div></div>
-        <dl class="event-meta"><div><dt>FECHA</dt><dd>Sabado, 18 Oct</dd></div><div><dt>PUERTA</dt><dd>19:30 - 23:30</dd></div><div><dt>LUGAR</dt><dd>Terraza 02</dd></div></dl>
-        <button class="text-button" type="button" id="change-event">Cambiar evento <span aria-hidden="true">-&gt;</span></button>
+        <div class="event-strip-title"><span class="event-pulse" aria-hidden="true"></span><div><p>EVENTO ACTIVO</p><strong id="active-event-name">Funk en la terraza</strong></div></div>
+        <dl class="event-meta"><div><dt>FECHA</dt><dd id="active-event-date">Sabado, 18 Oct</dd></div><div><dt>PUERTA</dt><dd id="active-event-doors">19:30 - 23:30</dd></div><div><dt>LUGAR</dt><dd id="active-event-venue">Terraza 02</dd></div></dl>
+        <button class="text-button" type="button" id="change-event"><span id="change-event-label">Gestionar eventos</span> <span aria-hidden="true">-&gt;</span></button>
       </section>
 
-      <section class="ticket-types" aria-labelledby="ticket-types-title">
+      <section class="ticket-types" id="ticket-types-section" aria-labelledby="ticket-types-title" hidden>
         <div class="ticket-types-intro">
           <p class="eyebrow">TIPOS DE BOLETA</p>
           <h2 id="ticket-types-title">Dos maneras de entrar al show.</h2>
@@ -116,7 +116,7 @@
         </article>
       </section>
 
-      <section class="gate-section" id="ingresos" aria-labelledby="gate-title">
+      <section class="gate-section" id="ingresos" aria-labelledby="gate-title" hidden>
         <header class="section-heading section-heading-light">
           <div><p class="eyebrow">PUERTA DE ENTRADA</p><h2 id="gate-title">Escanea. Confirma. <i>Que entre la música.</i></h2></div>
           <p>Valida preventas recibidas por WhatsApp y boletas creadas directamente en puerta con el mismo lector.</p>
@@ -153,7 +153,7 @@
         </div>
       </section>
 
-      <section class="ticket-workspace" id="boletas" aria-labelledby="tickets-title">
+      <section class="ticket-workspace" id="boletas" aria-labelledby="tickets-title" hidden>
         <div class="workspace-main">
           <header class="section-heading">
             <div><p class="eyebrow">LISTA DE ACCESO</p><h2 id="tickets-title">Boletas del evento</h2></div>
@@ -206,7 +206,7 @@
     <dialog class="modal ticket-form-modal" id="ticket-form-dialog" aria-labelledby="ticket-form-title">
       <form id="ticket-form" method="dialog">
         <div class="modal-heading"><div><p class="eyebrow">NUEVA BOLETA</p><h2 id="ticket-form-title">Lista para la pista.</h2></div><button class="close-button" type="button" data-close-dialog="ticket-form-dialog" aria-label="Cerrar formulario">&times;</button></div>
-        <p class="modal-intro">La boleta se crea para <b>Funk en la terraza</b>. Elige Preventa para compartir por WhatsApp o En puerta para emitirla al llegar.</p>
+        <p class="modal-intro" id="ticket-form-intro">La boleta se crea para Funk en la terraza. Elige Preventa para compartir por WhatsApp o En puerta para emitirla al llegar.</p>
         <div class="form-grid">
           <label class="form-field form-field-full">Nombre completo<input id="ticket-name" name="name" required maxlength="80" autocomplete="name" placeholder="Ej. Laura Acevedo" /></label>
           <label class="form-field" id="phone-field"><span id="phone-field-label">WhatsApp de preventa</span><input id="ticket-phone" name="phone" required inputmode="tel" maxlength="30" autocomplete="tel" placeholder="300 000 0000" /></label>
@@ -218,6 +218,32 @@
       </form>
     </dialog>
 
+    <dialog class="modal event-manager-modal" id="event-manager-dialog" aria-labelledby="event-form-title">
+      <div class="event-manager">
+        <div class="modal-heading"><div><p class="eyebrow" id="event-manager-eyebrow">ADMINISTRACIÓN</p><h2 id="event-form-title">Nuevo evento.</h2></div><button class="close-button" type="button" data-close-dialog="event-manager-dialog" aria-label="Cerrar administración de eventos">&times;</button></div>
+        <p class="modal-intro">Un solo evento puede estar activo para emitir y validar boletas. Los eventos anteriores conservan sus boletas y enlaces públicos.</p>
+        <div class="event-manager-grid">
+          <form id="event-form" method="dialog">
+            <input id="event-id" name="id" type="hidden" />
+            <div class="form-grid">
+              <label class="form-field form-field-full">Nombre del evento<input id="event-name" name="name" required maxlength="100" placeholder="Ej. Funk bajo las estrellas" /></label>
+              <label class="form-field">Fecha<input id="event-date" name="eventDate" type="date" required /></label>
+              <label class="form-field">Lugar<input id="event-venue" name="venue" required maxlength="100" placeholder="Ej. Terraza 02" /></label>
+              <label class="form-field">Apertura de puertas<input id="event-doors-open" name="doorsOpenAt" type="time" /></label>
+              <label class="form-field">Cierre de puertas<input id="event-doors-close" name="doorsCloseAt" type="time" /></label>
+              <label class="form-field">Hora del show<input id="event-show-time" name="showTime" type="time" /></label>
+              <label class="event-active-toggle form-field-full"><input id="event-active" name="isActive" type="checkbox" /><span>Activar este evento al guardar</span></label>
+            </div>
+            <div class="modal-footer"><p id="event-form-feedback" class="form-feedback" aria-live="polite"></p><div><button class="button button-outline" type="button" id="new-event">Nuevo</button><button class="button button-primary" id="event-form-submit" type="submit">Guardar evento</button></div></div>
+          </form>
+          <section class="event-list-panel" aria-labelledby="event-list-title">
+            <div><p class="eyebrow">CALENDARIO</p><h3 id="event-list-title">Tus eventos</h3></div>
+            <div class="event-list" id="event-list" aria-live="polite"></div>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
     <dialog class="modal ticket-view-modal" id="ticket-view-dialog" aria-labelledby="ticket-view-title">
       <button class="close-button view-close" type="button" data-close-dialog="ticket-view-dialog" aria-label="Cerrar vista de boleta">&times;</button>
       <div id="ticket-view-content"></div>
@@ -226,7 +252,7 @@
     <dialog class="modal auth-modal" id="auth-dialog" aria-labelledby="auth-title">
       <form id="auth-form" method="dialog">
         <div class="modal-heading"><div><p class="eyebrow">ACCESO DEL EQUIPO</p><h2 id="auth-title">Control de puerta.</h2></div><button class="close-button" type="button" data-close-dialog="auth-dialog" aria-label="Cerrar acceso">&times;</button></div>
-        <p class="modal-intro">Inicia sesión con la cuenta autorizada para crear y validar boletas en Supabase.</p>
+        <p class="modal-intro">Inicia sesión con una cuenta del equipo. Solo la cuenta administradora puede acceder a boletas, al escáner y a la validación QR.</p>
         <label class="form-field">Correo electrónico<input id="auth-email" name="email" type="email" required autocomplete="email" /></label>
         <label class="form-field">Contraseña<input id="auth-password" name="password" type="password" required autocomplete="current-password" /></label>
         <div class="modal-footer"><p id="auth-feedback" class="form-feedback" aria-live="polite"></p><div><button class="button button-primary" type="submit">Entrar al panel</button></div></div>
