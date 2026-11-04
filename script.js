@@ -1126,16 +1126,10 @@ async function startCamera() {
     elements.stopCamera.hidden = false;
     setCameraState("Activando", "running");
     elements.scannerHelp.textContent = "Permite el acceso a la camara y apunta al QR dentro del marco.";
-    if ("BarcodeDetector" in window) {
-      try {
-        await startNativeCamera();
-      } catch (error) {
-        if (isCameraPermissionError(error) || error?.name === "TimeoutError" || typeof window.Html5Qrcode !== "function") throw error;
-        clearNativeCamera();
-        await startCrossBrowserCamera();
-      }
-    } else if (typeof window.Html5Qrcode === "function") {
+    if (typeof window.Html5Qrcode === "function") {
       await startCrossBrowserCamera();
+    } else if ("BarcodeDetector" in window) {
+      await startNativeCamera();
     } else {
       throw new Error("QR camera scanning is not supported.");
     }
@@ -1177,17 +1171,24 @@ function qrFormats() {
   return typeof qrCode === "number" ? [qrCode] : undefined;
 }
 
-async function startCrossBrowserCamera() {
+function createCrossBrowserScanner() {
+  const config = { useBarCodeDetectorIfSupported: false };
   const formatsToSupport = qrFormats();
-  const scanner = new window.Html5Qrcode("camera-reader", formatsToSupport ? { formatsToSupport } : undefined);
+  if (formatsToSupport) config.formatsToSupport = formatsToSupport;
+  return new window.Html5Qrcode("camera-reader", config);
+}
+
+async function startCrossBrowserCamera() {
+  // The library's ZXing decoder is more reliable than experimental BarcodeDetector support on mobile.
+  const scanner = createCrossBrowserScanner();
   scannerState.libraryScanner = scanner;
   elements.cameraReader.hidden = false;
   const startPromise = scanner.start(
-    { facingMode: { ideal: "environment" } },
+    { facingMode: "environment" },
     {
       fps: 10,
       qrbox: (width, height) => {
-        const size = Math.floor(Math.min(width, height) * .7);
+        const size = Math.floor(Math.min(width, height) * .82);
         return { width: size, height: size };
       },
       aspectRatio: 1.333334,
@@ -1301,14 +1302,9 @@ async function scanUploadedImage(file) {
     elements.qrUpload.value = "";
     return;
   }
-  if (!("BarcodeDetector" in window)) {
-    if (typeof window.Html5Qrcode !== "function") {
-      setValidationResult("Este navegador no puede leer QR desde una imagen. Pega el codigo manualmente.", "error", "!");
-      return;
-    }
+  if (typeof window.Html5Qrcode === "function") {
     try {
-      const formatsToSupport = qrFormats();
-      const scanner = new window.Html5Qrcode("camera-reader", formatsToSupport ? { formatsToSupport } : undefined);
+      const scanner = createCrossBrowserScanner();
       const rawValue = await scanner.scanFile(file, false);
       try { scanner.clear(); } catch {}
       await validateTicket(rawValue);
@@ -1318,6 +1314,10 @@ async function scanUploadedImage(file) {
       elements.cameraReader.replaceChildren();
       elements.qrUpload.value = "";
     }
+    return;
+  }
+  if (!("BarcodeDetector" in window)) {
+    setValidationResult("Este navegador no puede leer QR desde una imagen. Pega el codigo manualmente.", "error", "!");
     return;
   }
   try {
