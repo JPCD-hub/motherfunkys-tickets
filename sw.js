@@ -1,4 +1,4 @@
-const CACHE_NAME = "mf-tickets-v18";
+const CACHE_NAME = "mf-tickets-v19";
 const RUNTIME_ASSETS = new Set([
   "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js",
   "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js",
@@ -19,7 +19,19 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Fetch a fresh copy for each release, then store it under its normal URL.
+    const entries = await Promise.all(APP_SHELL.map(async (asset) => {
+      const url = new URL(asset, self.registration.scope);
+      const versionedUrl = new URL(url);
+      versionedUrl.searchParams.set("cache-version", CACHE_NAME);
+      const response = await fetch(versionedUrl, { cache: "reload" });
+      if (!response.ok) throw new Error(`Could not cache ${url.pathname}`);
+      return [url.href, response];
+    }));
+    await Promise.all(entries.map(([url, response]) => cache.put(url, response)));
+  })());
   self.skipWaiting();
 });
 
