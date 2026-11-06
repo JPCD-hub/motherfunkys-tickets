@@ -112,25 +112,26 @@ h1 em, h2 i { color: var(--red); font-family: "Pacifico", cursive; font-size: .6
 .button-ghost:hover { border-color: var(--cream); }
 .button-red { color: #fff8ec; background: var(--red); }
 .button-red:hover { background: var(--red-deep); }
-.hero-note { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; color: var(--muted); font-family: "DM Mono", monospace; font-size: 10px; }
+.hero-note { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; color: var(--muted); font-family: "DM Mono", monospace; font-size: 10px; overflow-wrap: anywhere; }
 .live-dot, .event-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 4px rgba(212, 25, 24, .12); }
 
-.hero-ticket { position: relative; justify-self: end; width: min(100%, 370px); min-height: 408px; padding: 20px; overflow: hidden; color: var(--cream); background: var(--green); box-shadow: var(--shadow); transform: rotate(2.5deg); }
+.hero-ticket { position: relative; display: flex; flex-direction: column; justify-self: end; width: min(100%, 370px); min-height: 408px; padding: 20px; overflow: hidden; color: var(--cream); background: var(--green); box-shadow: var(--shadow); transform: rotate(2.5deg); }
 .hero-ticket::before { position: absolute; top: -116px; right: -112px; width: 286px; height: 286px; border: 1px solid rgba(244, 237, 223, .48); border-radius: 50%; content: ""; }
 .hero-ticket::after { position: absolute; right: 23px; bottom: -78px; width: 210px; height: 210px; border: 1px solid rgba(244, 237, 223, .28); border-radius: 50%; content: ""; }
 .ticket-topline { position: relative; z-index: 1; display: flex; justify-content: space-between; padding-bottom: 13px; border-bottom: 1px solid rgba(244, 237, 223, .45); font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: .8px; }
-.ticket-brand { position: relative; z-index: 1; margin-top: 30px; font-family: "Barlow Condensed", Impact, sans-serif; font-size: 53px; font-weight: 900; line-height: .68; letter-spacing: -2.8px; }
+.ticket-brand { position: relative; z-index: 1; margin-top: 30px; font-family: "Barlow Condensed", Impact, sans-serif; font-size: 53px; font-weight: 900; line-height: 1; letter-spacing: -2.8px; }
 .ticket-brand i { margin-left: 30px; color: var(--red); font-family: "Pacifico", cursive; font-size: .7em; font-weight: 400; letter-spacing: -1px; }
-.ticket-rhythm { position: absolute; z-index: 1; top: 159px; left: 20px; display: flex; align-items: end; gap: 6px; height: 74px; }
+.ticket-rhythm { position: relative; z-index: 1; display: flex; align-items: end; flex-shrink: 0; gap: 6px; height: 74px; margin: 18px 0 14px; }
 .ticket-rhythm span { display: block; width: 16px; background: var(--cream); }
 .ticket-rhythm span:nth-child(1) { height: 21px; }.ticket-rhythm span:nth-child(2) { height: 57px; background: var(--red); }.ticket-rhythm span:nth-child(3) { height: 35px; }.ticket-rhythm span:nth-child(4) { height: 69px; }.ticket-rhythm span:nth-child(5) { height: 44px; background: var(--red); }
-.ticket-bottom { position: absolute; z-index: 2; right: 20px; bottom: 21px; left: 20px; display: flex; align-items: end; justify-content: space-between; gap: 18px; padding-top: 14px; border-top: 1px solid rgba(244, 237, 223, .5); }
-.ticket-bottom b { display: block; font-family: "Barlow Condensed", Impact, sans-serif; font-size: 24px; line-height: .82; letter-spacing: -.4px; }
-.ticket-bottom small { display: block; margin-top: 10px; font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: .6px; }
+.ticket-bottom { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 18px; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(244, 237, 223, .5); }
+.ticket-bottom > div:first-child { min-width: 0; }
+.ticket-bottom b { display: block; font-family: "Space Grotesk", Arial, sans-serif; font-size: 20px; line-height: 1.15; letter-spacing: -.25px; overflow-wrap: anywhere; }
+.ticket-bottom small { display: block; margin-top: 10px; font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: .6px; overflow-wrap: anywhere; }
 .qr-host { display: grid; place-items: center; background: #fffdf7; }
 .hero-qr { width: 94px; height: 94px; padding: 5px; flex: 0 0 auto; }
 .qr-host canvas, .qr-host img { display: block; max-width: 100%; max-height: 100%; }
-.ticket-sticker { position: absolute; z-index: 3; top: 177px; right: -38px; padding: 8px 42px; color: var(--cream); background: var(--red); font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: .8px; transform: rotate(90deg); }
+.ticket-sticker { position: relative; z-index: 3; align-self: start; margin-bottom: 14px; padding: 6px 9px; color: var(--cream); background: var(--red); font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: .8px; }
 
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); width: min(var(--content), calc(100% - 48px)); margin: 0 auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .stats article { min-width: 0; padding: 24px 26px 22px; }
@@ -142,6 +143,7 @@ h1 em, h2 i { color: var(--red); font-family: "Pacifico", cursive; font-size: .6
 .event-strip { display: grid; grid-template-columns: 1.2fr 1fr auto; gap: 34px; align-items: center; width: min(var(--content), calc(100% - 48px)); margin: 38px auto 0; padding: 17px 20px; border: 1px solid var(--line); background: #f6efe2; }
 .event-strip-title { display: flex; align-items: center; gap: 12px; }.event-strip-title p { margin: 0 0 1px; color: var(--muted); font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: 1px; }.event-strip-title strong { color: var(--green); font-family: "Barlow Condensed", Impact, sans-serif; font-size: 23px; line-height: .9; text-transform: uppercase; }
 .event-meta { display: flex; justify-content: space-between; gap: 18px; margin: 0; }.event-meta div { min-width: 0; }.event-meta dt { color: var(--muted); font-family: "DM Mono", monospace; font-size: 8px; letter-spacing: .8px; }.event-meta dd { margin: 2px 0 0; color: var(--green); font-size: 11px; font-weight: 600; white-space: nowrap; }
+.event-strip-title, .event-strip-title > div, .event-meta { min-width: 0; }.event-meta div { max-width: 100%; }.event-strip-title strong, .event-meta dd { white-space: normal; overflow-wrap: anywhere; }
 .text-button { border: 0; padding: 7px 0; color: var(--green); background: transparent; font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: .45px; text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 4px; text-transform: uppercase; white-space: nowrap; }.text-button:hover { color: var(--red); }
 
 .gate-section { margin-top: 70px; padding: 72px max(24px, calc((100% - var(--content)) / 2)); color: var(--cream); background: var(--green); }
@@ -182,6 +184,7 @@ h1 em, h2 i { color: var(--red); font-family: "Pacifico", cursive; font-size: .6
 @media (max-width: 700px) {
   .topbar, .hero, .stats, .event-strip, .ticket-workspace, .bottom-banner { width: min(calc(100% - 32px), var(--content)); }
   .hero-lead { max-width: 100%; }
+  .hero h1 { line-height: 1; }
   .event-strip { grid-template-columns: 1fr; }
   .event-strip-title, .event-meta { min-width: 0; }
   .event-meta { grid-column: 1; grid-row: auto; }
@@ -247,6 +250,29 @@ h1 em, h2 i { color: var(--hot); font-family: "Shrikhand", "Cooper Black", cursi
 
 @media (max-width: 410px) {
   .ticket-types { width: min(calc(100% - 26px), var(--content)); }.brand-logo { width: 110px; height: 47px; }
+}
+
+/* Keep the promo card legible when event names wrap on compact screens. */
+@media (max-width: 900px) {
+  .hero-ticket { width: 100%; max-width: 370px; min-height: 0; padding: 18px; }
+  .ticket-rhythm { top: auto; align-self: flex-start; height: 52px; }
+  .ticket-rhythm span { width: 12px; }
+  .ticket-rhythm span:nth-child(1) { height: 15px; }.ticket-rhythm span:nth-child(2) { height: 40px; }.ticket-rhythm span:nth-child(3) { height: 25px; }.ticket-rhythm span:nth-child(4) { height: 50px; }.ticket-rhythm span:nth-child(5) { height: 32px; }
+  .ticket-bottom { gap: 12px; padding-top: 12px; }
+  .ticket-bottom b { font-size: 18px; }
+  .ticket-bottom small { margin-top: 8px; }
+  .hero-qr { width: 82px; height: 82px; }
+  .ticket-sticker { top: auto; }
+}
+
+@media (max-width: 700px) {
+  .hero-ticket { transform: none; }
+}
+
+@media (max-width: 410px) {
+  .ticket-topline { font-size: 8px; }
+  .ticket-brand { font-size: 39px; }
+  .hero-qr { width: 76px; height: 76px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
